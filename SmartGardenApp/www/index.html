@@ -5,7 +5,35 @@
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
         <title>Blank App</title>
     </head>
+
     <body>
         <script type="text/javascript" src="cordova.js"></script>
     </body>
 </html>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+var mqtt = require(mqtt);
+                  // Create a client connection
+                  var client = mqtt.connect("mqtt://mqtt.dioty.co:1883", {
+                  username: 'klovakarlsson@gmail.com',
+                  password: 'ee07432c'
+                  });
+
+                  client.on('connect', function() { // Check you have a connection
+
+                  // Subscribe to a Topic
+                  client.subscribe('/klovakarlsson@gmail.com/hej', function() {
+                  // When a message arrives, write it to the console
+                          client.on('message', function(topic, message, packet) {
+                              console.log("Received '" + message + "' on '" + topic + "'");
+                          });
+                      });
+
+                  // Publish a message to a Topic
+                      client.publish('/klovakarlsson@gmail.com/hej', 'Hello World Message!', function() {
+                          console.log("Message posted...");
+                          client.end(); // Close the connection after publish
+                      });
+                  });
+</script>
