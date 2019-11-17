@@ -2,6 +2,7 @@
 <html>
    <head>
       <title>JavaScript MQTT WebSocket Example</title>
+      <link rel="stylesheet" href="style.css">
 	  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript">
 	 </script>
 	 <script type = "text/javascript" language = "javascript">
@@ -37,7 +38,7 @@
 
       mqtt.onMessageArrived = function (message) {
         console.log("Message Arrived: " + message.payloadString + " - " + "Topic:     " + message.destinationName);
-        document.getElementById("temp1").innerHTML = message.payloadString;
+        document.getElementById("temp1").innerHTML = message.payloadString + "°C";
 
       }
 
@@ -50,14 +51,27 @@
 
 	  </script>
    </head>
-     <body>
-   <h1>Main Body</h1>
+    <body>
+      <div class="container">
 
-   <p id="temp1" style="display: inline;">Hello World!</p><p style="display: inline"> °C</p>
+      <span class="temp">
+        <p id="temp1" style="display: inline;">16°C</p>
+      </span>
+      <span class="temp">
+        <p id="temp2" style="display: inline;">16°C</p>
+      </span>
+      <span class="temp">
+        <p id="temp3" style="display: inline;">16°C</p>
+      </span>
+      <span class="temp">
+        <p id="temp4" style="display: inline;">16°C</p>
+      </span>
 
 
- 	<script>
-	MQTTconnect();
-	</script>
+      </div>
+
+    <script>
+     MQTTconnect();
+    </script>
    </body>
 </html>
