@@ -21,9 +21,7 @@
 		mqtt.send(message);
     console.log("Message sent")
 
-    mqtt.subscribe("/klovakarlsson@gmail.com/temp");
-    mqtt.subscribe("/klovakarlsson@gmail.com/moist");
-
+    mqtt.subscribe("/klovakarlsson@gmail.com/hej");
 	  }
 
 	  function MQTTconnect() {
@@ -40,13 +38,7 @@
 
       mqtt.onMessageArrived = function (message) {
         console.log("Message Arrived: " + message.payloadString + " - " + "Topic:     " + message.destinationName);
-
-        if (message.destinationName == "/klovakarlsson@gmail.com/temp"){
-          document.getElementById("temp1").innerHTML = message.payloadString + "°C";
-          console.log("yayayyaya");
-        }else if (message.destinationName == "/klovakarlsson@gmail.com/moist"){
-          document.getElementById("temp2").innerHTML = (100 - Math.ceil(message.payloadString / 1023 * 100) + "%");
-        }
+        document.getElementById("temp1").innerHTML = message.payloadString + "°C";
 
       }
 
@@ -60,7 +52,6 @@
 	  </script>
    </head>
     <body>
-      <h1>Smart Garden</h1>
       <div class="container">
 
       <span class="temp">
@@ -69,7 +60,12 @@
       <span class="temp">
         <p id="temp2" style="display: inline;">16°C</p>
       </span>
-
+      <span class="temp">
+        <p id="temp3" style="display: inline;">16°C</p>
+      </span>
+      <span class="temp">
+        <p id="temp4" style="display: inline;">16°C</p>
+      </span>
 
 
       </div>

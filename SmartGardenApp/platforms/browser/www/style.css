@@ -1,0 +1,36 @@
+
+body {
+  margin: 0;
+  width: 100vw;
+}
+
+.container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+
+
+  margin: 3em 0;
+
+  width: 100vw;
+}
+
+.temp{
+  background: #008e7a;
+
+  font-size: 40px;
+  text-align: center;
+
+  padding: .3em;
+  margin: .5em;
+  border-radius: .4em;
+
+  flex-grow: 100;
+  min-width: 20vw;
+}
+
+.temp:first-of-type{
+  min-width: 80vw;
+
+}
