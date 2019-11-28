@@ -30,7 +30,6 @@ body {
   border-radius: .25rem;
 
   flex-grow: 100;
-  min-width: 200px;
 }
 
 .temp{
@@ -80,7 +79,7 @@ h1{
 
   line-height: 60px;
   text-align: center;
-  font-size: 40px;
+  font-size: 50px;
 
   height: 60px;
   width: 60px;

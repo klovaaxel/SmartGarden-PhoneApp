@@ -23,8 +23,8 @@
      mqtt.send(message);
      console.log("Message sent")
 
-     mqtt.subscribe("/klovakarlsson@gmail.com/temp");
-     mqtt.subscribe("/klovakarlsson@gmail.com/moist");
+     mqtt.subscribe("/klovakarlsson@gmail.com/temp1");
+     //mqtt.subscribe("/klovakarlsson@gmail.com/moist");
 
      }
 
@@ -45,16 +45,11 @@
        mqtt.onMessageArrived = function (message) {
          console.log("Message Arrived: " + message.payloadString + " - " + "Topic:     " + message.destinationName);
 
-         if (message.destinationName == "/klovakarlsson@gmail.com/temp"){
-           document.getElementById("temp1").innerHTML = message.payloadString + "°C";
-           console.log("yayayyaya");
-         }else if (message.destinationName == "/klovakarlsson@gmail.com/moist"){
-           document.getElementById("temp2").innerHTML = (100 - Math.ceil(message.payloadString / 1023 * 100) + "%");
-         }
+
+         var msgid = message.destinationName.split("/").pop();
+         document.getElementById(msgid).innerHTML = (message.payloadString + "°C");
 
        }
-
-
 
      mqtt.connect(options); //connect
 
@@ -66,7 +61,7 @@
 
     <script type="text/javascript">
       function add(){
-        document.getElementById('main-container').innerHTML += '<span id="t" class="sensor t"> <input type="text" name="name" id="uniqueID" value="value" placeholder="Name of new sensor" /> <button onclick="nameSensor()">submit</button> </span>';
+        document.getElementById('main-container').innerHTML += '<span id="t" class="sensor t"> <input type="text" name="name" id="uniqueID" value="value" placeholder="Name of new sensor" /> <select id="tselect"name="type of widget"> <option value="moist">Soil Moisture</option> <option value="temp">Temperature</option> <option value="moist">Air Moisture</option> </select> <button onclick="nameSensor()">submit</button> </span>';
 
       }
 
@@ -79,14 +74,19 @@
         mqtt.send(message);
         console.log(nameValue + " sent");
 
-        document.getElementById('t').innerHTML = '<p id="temp2" style="display: inline;">' + nameValue + '</p>';
-        document.getElementById("t").className = "sensor temp";
+        mqtt.subscribe("/klovakarlsson@gmail.com/" + nameValue);
+
+        document.getElementById("t").className = "sensor " + document.getElementById('tselect').value;
+        document.getElementById('t').innerHTML = '<p id="' + nameValue + '" style="display: inline;">' + nameValue + '</p>';
         document.getElementById("t").id = nameValue;
 
-        console.log("this shit happend");
+
+
       }
     </script>
   </head>
+
+
     <body>
       <h1>Smart Garden</h1>
       <div class="container" id="main-container">
@@ -100,9 +100,9 @@
 
       </div>
 
-      <button onClick="add()" class="main button add">
+      <div onClick="add()" class="main button add">
         +
-      </button>
+      </div>
 
     <script>
      MQTTconnect();
