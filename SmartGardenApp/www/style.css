@@ -53,9 +53,22 @@ body {
   border-color: #555;
 }
 
+header{
+  width: 100%;
+  padding: 0;
+  text-align: center;
+
+  background: #000;
+
+
+  margin: 0;
+
+
+}
+
 h1{
   width: 100%;
-  padding: 5vh 0;
+  padding: 4vh 0;
   text-align: center;
 
   background: linear-gradient(172deg, rgba(0,176,149,1) 0%, rgba(0,120,90,1) 100%);
@@ -63,8 +76,12 @@ h1{
 
   margin: 0;
 
-
+  border-top: solid;
+  border-top-left-radius: 2.5rem;
+  border-top-right-radius: 2.5rem;
+  border-color: black;
 }
+
 
 .button{
 
