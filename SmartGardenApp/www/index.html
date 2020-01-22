@@ -20,8 +20,7 @@
     function onConnect() {  //on sucsefull connect to MQTT Broker
       console.log("connected to "+ host +" "+ port);   //logs the Successful connection
 
-      mqtt.subscribe("/klovakarlsson@gmail.com/com"); //connect to the naming channel (required to make and reject new names)
-      console.log("com ok")
+
     }
 
 
@@ -47,27 +46,26 @@
         var msgSubTopic = message.destinationName.split("/").pop(); // splits the subtopic from the topic and stores as msgSubTopic
 
         if (msgSubTopic == "com") { // checks if the message is a update to sensors or a com message between sensors
-          if (message.payloadString != "inUse") {
-            //sends a response that the channel is in-use
-            message = new Paho.MQTT.Message("inUse");
-            message.destinationName = msgTopic;
-            mqtt.send(message);
+          //sends a response that the channel is in-use
+          message = new Paho.MQTT.Message("inUse");
+          message.destinationName = msgTopic;
+   ;
+          mqtt.send(message);
+          console.log("Responded to Com :" + "'" + message + "'" ) //logs the response
 
-            //confNameSensor();
-
-          }else{
-            unconfNameSensor();
-          }
         }else { // if the message is senor information
-          document.getElementById(msgSubTopic).innerHTML = (message.payloadString + "°C"); //updates html (with the same id as ) with new information
+          if (msgSubTopic == "temp")  {
+            document.getElementById(msgSubTopic).innerHTML = (message.payloadString + "°C"); //updates html (with the same id as ) with new information
+          }else{
+            document.getElementById(msgSubTopic).innerHTML = (message.payloadString + "°%"); //updates html (with the same id as ) with new information
+          }
+
         }
 
 
        }
 
     mqtt.connect(options); //connects to the broker
-
-
    }
 
    //    ---HTML manipulation---
@@ -81,40 +79,21 @@
 
        var nameValue = document.getElementById("uniqueID").value;
 
-       message = new Paho.MQTT.Message('nameValue');
-       message.destinationName = "/klovakarlsson@gmail.com/com";
+       message = new Paho.MQTT.Message(nameValue);
+       message.destinationName = "/klovakarlsson@gmail.com/com/newname";
        mqtt.send(message);
-
        console.log(nameValue + " sent");
 
-       sleep(5000);
-
-       console.log("sametime?");
-
-
-       confNameSensor();
-
-
-     }
-
-     function confNameSensor(){
-       /*mqtt.subscribe("/klovakarlsson@gmail.com/" + nameValue);
+       mqtt.subscribe("/klovakarlsson@gmail.com/" + nameValue);
 
        document.getElementById("t").className = "sensor " + document.getElementById('tselect').value;
        document.getElementById('t').innerHTML = '<p id="' + nameValue + '" style="display: inline;">' + nameValue + '</p>';
        document.getElementById("t").id = nameValue;
-       */
 
-       console.log("ok?");
+
 
      }
-     function unconfNameSensor(){
-       console.log("shit");
-     }
 
-     function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
     </script>
   </head>
 
@@ -127,7 +106,7 @@
 
         <!--
       <span class="sensor temp">
-          <p id="temp1" style="display: inline;"> 0°C</p>
+          <p id="temp1" style="display: inline;"> 0</p>
         </span>
         <span class="sensor moist">
           <p id="temp2" style="display: inline;"> 0%</p>
