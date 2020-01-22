@@ -12,80 +12,108 @@
 
 
     <script type = "text/javascript" language = "javascript"> //mqtt script
-     var mqtt;
-     var reconnectTimeout = 2000;
-     var host="mqtt.dioty.co"; //change this
-     var port=8080;
+    var mqtt;
+    var reconnectTimeout = 2000;
+    var host="mqtt.dioty.co"; //change this
+    var port=8080;
 
-     function onConnect() {
-     // Once a connection has been made, make a subscription and send a message.
+    function onConnect() {  //on sucsefull connect to MQTT Broker
+      console.log("connected to "+ host +" "+ port);   //logs the Successful connection
 
-     console.log("Connected ");
-     //mqtt.subscribe("sensor1");
-     message = new Paho.MQTT.Message("Phone Connected");
-     message.destinationName = "/klovakarlsson@gmail.com/hej";
-     mqtt.send(message);
-     console.log("Message sent")
-
-     mqtt.subscribe("/klovakarlsson@gmail.com/temp1");
-     //mqtt.subscribe("/klovakarlsson@gmail.com/moist");
-
-     }
+      mqtt.subscribe("/klovakarlsson@gmail.com/com"); //connect to the naming channel (required to make and reject new names)
+      console.log("com ok")
+    }
 
 
 
-     function MQTTconnect() {
-     console.log("connecting to "+ host +" "+ port);
-     mqtt = new Paho.MQTT.Client(host,port,"clientjs");
-     //document.write("connecting to "+ host);
-     var options = {
-       timeout: 3,
-       onSuccess: onConnect,
-       userName : "klovakarlsson@gmail.com",
-       password : "ee07432c"
+    function MQTTconnect() {
 
-      };
+      console.log("connecting to "+ host +" "+ port);
+      mqtt = new Paho.MQTT.Client(host,port,"clientjs");//cerates new intance to connect to the mqtt broker
+
+
+      var options = { // options used to connect to the mqtt broker
+        timeout: 3,
+        onSuccess: onConnect, //what function to call when succsefully connected
+        userName : "klovakarlsson@gmail.com",
+        password : "ee07432c"
+
+       };
 
        mqtt.onMessageArrived = function (message) {
-         console.log("Message Arrived: " + message.payloadString + " - " + "Topic:     " + message.destinationName);
+        console.log("Message Arrived: " + message.payloadString + " - " + "Topic: " + message.destinationName); //logs the incoming message
 
+        var msgTopic =  message.destinationName;//stores the entire topic path as msgTopuc
+        var msgSubTopic = message.destinationName.split("/").pop(); // splits the subtopic from the topic and stores as msgSubTopic
 
-         var msgid = message.destinationName.split("/").pop();
-         document.getElementById(msgid).innerHTML = (message.payloadString + "°C");
+        if (msgSubTopic == "com") { // checks if the message is a update to sensors or a com message between sensors
+          if (message.payloadString != "inUse") {
+            //sends a response that the channel is in-use
+            message = new Paho.MQTT.Message("inUse");
+            message.destinationName = msgTopic;
+            mqtt.send(message);
+
+            //confNameSensor();
+
+          }else{
+            unconfNameSensor();
+          }
+        }else { // if the message is senor information
+          document.getElementById(msgSubTopic).innerHTML = (message.payloadString + "°C"); //updates html (with the same id as ) with new information
+        }
+
 
        }
 
-     mqtt.connect(options); //connect
+    mqtt.connect(options); //connects to the broker
+
+
+   }
+
+   //    ---HTML manipulation---
+
+     function add(){ //function (div with inputs in the main-container) to add a setup for sensor
+       document.getElementById('main-container').innerHTML += '<span id="t" class="sensor t"> <input type="text" name="name" id="uniqueID" value="" placeholder="Name of new sensor" /> <select id="tselect"name="type of widget"> <option value="moist">Soil Moisture</option> <option value="temp">Temperature</option> <option value="moist">Air Moisture</option> </select> <button onclick="nameSensor()">submit</button> </span>';
 
      }
 
-     </script>
+     function nameSensor(){ //function to connect sensor to html sensor  --NOT DONE--
+
+       var nameValue = document.getElementById("uniqueID").value;
+
+       message = new Paho.MQTT.Message('nameValue');
+       message.destinationName = "/klovakarlsson@gmail.com/com";
+       mqtt.send(message);
+
+       console.log(nameValue + " sent");
+
+       sleep(5000);
+
+       console.log("sametime?");
 
 
-
-    <script type="text/javascript">
-      function add(){
-        document.getElementById('main-container').innerHTML += '<span id="t" class="sensor t"> <input type="text" name="name" id="uniqueID" value="" placeholder="Name of new sensor" /> <select id="tselect"name="type of widget"> <option value="moist">Soil Moisture</option> <option value="temp">Temperature</option> <option value="moist">Air Moisture</option> </select> <button onclick="nameSensor()">submit</button> </span>';
-
-      }
-
-      function nameSensor(){
-
-        var nameValue = document.getElementById("uniqueID").value;
-
-        message = new Paho.MQTT.Message(nameValue);
-        message.destinationName = "/klovakarlsson@gmail.com/com/newname";
-        mqtt.send(message);
-        console.log(nameValue + " sent");
-
-        mqtt.subscribe("/klovakarlsson@gmail.com/" + nameValue);
-
-        document.getElementById("t").className = "sensor " + document.getElementById('tselect').value;
-        document.getElementById('t').innerHTML = '<p id="' + nameValue + '" style="display: inline;">' + nameValue + '</p>';
-        document.getElementById("t").id = nameValue;
+       confNameSensor();
 
 
+     }
 
+     function confNameSensor(){
+       /*mqtt.subscribe("/klovakarlsson@gmail.com/" + nameValue);
+
+       document.getElementById("t").className = "sensor " + document.getElementById('tselect').value;
+       document.getElementById('t').innerHTML = '<p id="' + nameValue + '" style="display: inline;">' + nameValue + '</p>';
+       document.getElementById("t").id = nameValue;
+       */
+
+       console.log("ok?");
+
+     }
+     function unconfNameSensor(){
+       console.log("shit");
+     }
+
+     function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
       }
     </script>
   </head>
@@ -97,12 +125,14 @@
       </header>
       <div class="container" id="main-container">
 
-        <span class="sensor temp">
+        <!--
+      <span class="sensor temp">
           <p id="temp1" style="display: inline;"> 0°C</p>
         </span>
         <span class="sensor moist">
           <p id="temp2" style="display: inline;"> 0%</p>
         </span>
+      -->
 
       </div>
 
