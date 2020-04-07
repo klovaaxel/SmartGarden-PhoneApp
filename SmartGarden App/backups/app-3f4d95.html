@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JavaScript MQTT WebSocket Example</title>
+
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+
+
+    <script type = "text/javascript" language = "javascript"> //mqtt script
+      //mqtt variables
+      var mqtt;
+      var reconnectTimeout = 2000; //time between reconnects
+      var host="mqtt.dioty.co"; //broker
+      var port=8080; // websocket for browser compatability
+
+      var subbedTopics = [];
+
+
+
+      function onConnect() {  //on sucsefull connect to MQTT Broker
+        console.log("connected to "+ host +" "+ port);   //logs the Successful connection
+
+        if(localStorage.getItem('mem') != "undefined"){ //checks if local storage is empty
+          document.getElementById("main-container").innerHTML = localStorage.getItem('mem'); //gets html layout from storage if not empty
+          console.log("Got layout from mem"); //logs that layout was taken from mem
+        }
+        if(localStorage.getItem('memSub') != "undefined"){
+          
+        }
+
+      }
+
+      function MQTTconnect() {
+
+        console.log("connecting to "+ host +" "+ port); //logs the port and host its connecting to
+        mqtt = new Paho.MQTT.Client(host,port,"clientjs");//cerates new intance to connect to the mqtt broker
+
+
+        var options = { // options used to connect to the mqtt broker
+          timeout: 3,
+          onSuccess: onConnect, //what function to call when succsefully connected
+          userName : "klovakarlsson@gmail.com",
+          password : "ee07432c"
+
+         };
+
+         mqtt.onMessageArrived = function (message) { //starts when a message is recived on a subbed topic
+          console.log("Message Arrived: " + message.payloadString + " - " + "Topic: " + message.destinationName); //logs the incoming message
+
+          document.getElementById(message.destinationName).innerHTML = (message.payloadString); //updates html (with the same id as ) with new information
+        }
+
+
+
+      mqtt.connect(options); //connects to the broker
+      }
+
+     //    ---HTML manipulation---
+      function addNewSensor(){
+        //creates a html input and submit form with two inputs with the id sensnumID and sensNameID (sensNum and sensName)
+        //submit btn calls connectNewSensor()
+        document.getElementById('main-container').innerHTML += '<span id="addSensID" class="sensor t"> <input type="text" name="sensNumForm" id="sensNumID" value="" placeholder="Number printed on sensor" /> <input type="text" name="sensNameForm" id="sensNameID" value="" placeholder="the name your sensor" /> <button onclick="connectNewSensor()">Add Sensor</button> </span>';
+
+
+      }
+
+      function connectNewSensor(){ //function to connect sensor
+        var sensNum = document.getElementById('sensNumID').value; //gets the sensNum from html form
+        var sensName = document.getElementById('sensNameID').value; //gets the sensName from html form
+
+        message = new Paho.MQTT.Message(sensName);
+        message.destinationName = "/klovakarlsson@gmail.com/" + sensNum;
+        mqtt.send(message); // sends the new name of sensor to sensor (on the sensNum topic)
+        console.log("named sensor " + sensNum + " to " + sensName); //logs the console
+
+        mqtt.subscribe("/klovakarlsson@gmail.com/" + sensName);//subscribes to the sensors new channel
+        var subbedTopics += "/klovakarlsson@gmail.com/" + sensName;
+
+
+        //check wich sensor it is (sens num)
+        if(sensNum > 02000){
+          mqtt.subscribe("/klovakarlsson@gmail.com/" + sensName + "/pmp");//subscribes to the sensors new channel
+          var subbedTopics += "/klovakarlsson@gmail.com/" + sensName + "/pmp";
+
+          console.log("sens is pump");
+
+          document.getElementById("addSensID").className = "sensor pump"; //changes the class for the newSens form
+          document.getElementById('addSensID').innerHTML = '<p id="/klovakarlsson@gmail.com/' + sensName  + '/pmp" style="display: inline;">Hello</p>'; //changes the html inside the addSensor form to make it a sensor block
+          document.getElementById("addSensID").id = "none"; //changes the id for the newSens form
+
+        }else if (sensNum < 02000) {
+          mqtt.subscribe("/klovakarlsson@gmail.com/" + sensName + "/temp");//subscribes to the sensors new channel
+          var subbedTopics += "/klovakarlsson@gmail.com/" + sensName + "/temp";
+          mqtt.subscribe("/klovakarlsson@gmail.com/" + sensName + "/moist");//subscribes to the sensors new channel
+          var subbedTopics += "/klovakarlsson@gmail.com/" + sensName + "/moist";
+
+          console.log("sens is sens");
+
+          document.getElementById("addSensID").className = "sensor tempmoist"; //changes the class for the newSens form
+          document.getElementById('addSensID').innerHTML = '<p id="/klovakarlsson@gmail.com/' + sensName  + '/temp" style="display: inline;">Hello</p><p id="/klovakarlsson@gmail.com/' + sensName  + '/moist" style="display: inline;">Hello</p>'; //changes the html inside the addSensor form to make it a sensor block
+          document.getElementById("addSensID").id = "none"; //changes the id for the newSens form
+
+        }
+
+        localStorage.setItem('mem', document.getElementById('main-container').innerHTML); //saves the current layout and js
+        localStorage.setItem('memSub', subbedTopics); //saves the current layout and js
+
+      }
+
+    </script>
+
+  </head>
+
+
+    <body>
+      <header>
+        <h1>Smart Garden</h1>
+      </header>
+      <div class="container" id="main-container">
+
+        <!--
+        <span class="sensor temp">
+          <p id="temp1" style="display: inline;"> 0</p>
+        </span>
+        <span class="sensor moist">
+          <p id="temp2" style="display: inline;"> 0%</p>
+        </span>
+
+        <span id="t" class="sensor t">
+          <input type="text" name="sensNumForm" id="sensNumID" value="" placeholder="Number printed on sensor" />
+          <input type="text" name="sensNameForm" id="sensNameID" value="" placeholder="the name your sensor" />
+
+          <button onclick="connectNewSensor()">Add Sensor</button>
+        </span>
+
+        <span id="t" class="sensor t"> <input type="text" name="sensNumForm" id="sensNumID" value="" placeholder="Number printed on sensor" /> <input type="text" name="sensNameForm" id="sensNameID" value="" placeholder="the name your sensor" /> <button onclick="connectNewSensor()">Add Sensor</button> </span>
+
+      -->
+
+      </div>
+
+      <div onClick="addNewSensor()" class="main button add">
+        +
+      </div>
+
+    <script>
+     MQTTconnect();
+
+
+    </script>
+   </body>
+</html>
